@@ -12,7 +12,7 @@ const Footer = () => {
       py={4}
     >
       <Flex justify="center" align="center">
-        <Link href="https://github.com/joshdoman/BTCScribe" isExternal>
+        <Link href="https://github.com/joshdoman/btc-scribe" isExternal>
           <Image src="./github-mark.svg" width="22px" marginRight="6px"/>
         </Link>
         <Text mr={2}>Released under MIT License</Text>
