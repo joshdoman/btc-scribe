@@ -72,7 +72,7 @@ function App() {
     lastJsonMessage,
     readyState
   } = useWebSocket(`wss://${mempoolUrl}/api/v1/ws`);
-  const debouncedTextInput = useDebounce(inputData, 300);
+  const debouncedTextInput = useDebounce(inputData, 600);
 
   var feeRate = 1;
   switch (feeRateType) {
