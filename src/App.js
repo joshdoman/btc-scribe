@@ -8,6 +8,7 @@ import {
   Box,
   Wrap,
   Link,
+  Image,
   IconButton,
   InputGroup,
   Input,
@@ -55,9 +56,14 @@ const returnScript = btc.Script.encode(['RETURN', 0, 0, 0, 0]); // min-tx-size: 
 const urlParams = new URLSearchParams(window.location.search);
 const defaultMsg = urlParams.get('s') ?? '';
 
+const isMobile = () => {
+  return window.innerWidth < 768;
+};
+
 function App() {
   const [feeRateType, setFeeRateType] = useState('2');
   const [customFeeRate, setCustomFeeRate] = useState(1);
+  const [showFeeRates, setShowFeeRates] = useState(!isMobile());
   const [conversions, setConversions] = useState(undefined);
   const [inputData, setInputData] = useState(defaultMsg);
   const [revealTx, setRevealTx] = useState(null);
@@ -262,81 +268,96 @@ function App() {
                 (debouncedTextInput !== '') && (
                   <>
                     <Box>
-                      <Text mb={2}>Fee Rate: {feeRate} sats/vB</Text>
+                      <Flex align="center" justify="space-between" p={4} padding={0}>
+                        <Text >Fee Rate: {feeRate} sats/vB</Text>
+                        <Image
+                          width="24px"
+                          src="./settings.svg"
+                          marginRight={2}
+                          cursor="pointer"
+                          hidden={!isMobile()}
+                          onClick={() => {
+                            setShowFeeRates(!showFeeRates);
+                          }} />
+                      </Flex>
                       
-                      <RadioGroup onChange={setFeeRateType} value={feeRateType}>
-                        <Wrap spacing={4} justify="center">
-                          <WrapItem>
-                            <Radio 
-                              value="1" 
-                              borderColor="gray.300" 
-                              colorScheme="teal"
-                              borderWidth="2px" 
-                              borderRadius="md" 
-                              px={6} 
-                              py={4}
-                              _hover={{ bg: "teal.100" }}
-                            >
-                              Slow ({fees.hourFee} sats/vB)
-                            </Radio>
-                          </WrapItem>
-                          <WrapItem>
-                            <Radio 
-                              value="2" 
-                              borderColor="gray.300" 
-                              colorScheme="teal"
-                              borderWidth="2px" 
-                              borderRadius="md" 
-                              px={6} 
-                              py={4}
-                              _hover={{ bg: "teal.100" }}
-                            >
-                              Normal ({fees.halfHourFee} sats/vB)
-                            </Radio>
-                          </WrapItem>
-                          <WrapItem>
-                            <Radio 
-                              value="3" 
-                              borderColor="gray.300" 
-                              colorScheme="teal"
-                              borderWidth="2px" 
-                              borderRadius="md" 
-                              px={6} 
-                              py={4}
-                              _hover={{ bg: "teal.100" }}
-                            >
-                              Fast ({fees.fastestFee} sats/vB)
-                            </Radio>
-                          </WrapItem>
-                          <WrapItem>
-                            <Radio 
-                              value="4" 
-                              borderColor="gray.300" 
-                              colorScheme="teal"
-                              borderWidth="2px" 
-                              borderRadius="md" 
-                              px={6} 
-                              py={4}
-                              _hover={{ bg: "teal.100" }}
-                            >
-                              Custom
-                            </Radio>
-                            <Input
-                              value={customFeeRate}
-                              onChange={(e) => setCustomFeeRate(e.target.value)}
-                              type="number"
-                              min={1}
-                              max={1000}
-                              fontSize={14}
-                              paddingLeft={2}
-                              height={8}
-                              position="relative"
-                              top="50%"
-                              transform="translateY(-50%)"
-                              />
-                          </WrapItem>
-                        </Wrap>
-                      </RadioGroup>
+                      {
+                        (showFeeRates) && (
+                          <RadioGroup onChange={setFeeRateType} value={feeRateType}>
+                            <Wrap spacing={4} justify="center">
+                              <WrapItem>
+                                <Radio 
+                                  value="1" 
+                                  borderColor="gray.300" 
+                                  colorScheme="teal"
+                                  borderWidth="2px" 
+                                  borderRadius="md" 
+                                  px={6} 
+                                  py={4}
+                                  _hover={{ bg: "teal.100" }}
+                                >
+                                  Slow ({fees.hourFee} sats/vB)
+                                </Radio>
+                              </WrapItem>
+                              <WrapItem>
+                                <Radio 
+                                  value="2" 
+                                  borderColor="gray.300" 
+                                  colorScheme="teal"
+                                  borderWidth="2px" 
+                                  borderRadius="md" 
+                                  px={6} 
+                                  py={4}
+                                  _hover={{ bg: "teal.100" }}
+                                >
+                                  Normal ({fees.halfHourFee} sats/vB)
+                                </Radio>
+                              </WrapItem>
+                              <WrapItem>
+                                <Radio 
+                                  value="3" 
+                                  borderColor="gray.300" 
+                                  colorScheme="teal"
+                                  borderWidth="2px" 
+                                  borderRadius="md" 
+                                  px={6} 
+                                  py={4}
+                                  _hover={{ bg: "teal.100" }}
+                                >
+                                  Fast ({fees.fastestFee} sats/vB)
+                                </Radio>
+                              </WrapItem>
+                              <WrapItem>
+                                <Radio 
+                                  value="4" 
+                                  borderColor="gray.300" 
+                                  colorScheme="teal"
+                                  borderWidth="2px" 
+                                  borderRadius="md" 
+                                  px={6} 
+                                  py={4}
+                                  _hover={{ bg: "teal.100" }}
+                                >
+                                  Custom
+                                </Radio>
+                                <Input
+                                  value={customFeeRate}
+                                  onChange={(e) => setCustomFeeRate(e.target.value)}
+                                  type="number"
+                                  min={1}
+                                  max={1000}
+                                  fontSize={14}
+                                  paddingLeft={2}
+                                  height={8}
+                                  position="relative"
+                                  top="50%"
+                                  transform="translateY(-50%)"
+                                  />
+                              </WrapItem>
+                            </Wrap>
+                          </RadioGroup>
+                        )
+                      }
                     </Box>
                     
                     <Box>
