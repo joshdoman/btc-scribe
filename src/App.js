@@ -1,5 +1,5 @@
 /* global BigInt */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   ChakraProvider,
   Center,
@@ -121,7 +121,7 @@ function App() {
   const revealAddress = revealPayment.address;
 
   // Submit reveal tx once we know commit txid and vout
-  const submitRevealTx = useMemo((txid, index, value) => {
+  const submitRevealTx = useCallback((revealPayment, txid, index, value) => {
     if (!value) return;
     const revealTx = new btc.Transaction({ allowUnknownOutputs: true, customScripts });
     revealTx.addInput({
@@ -139,7 +139,7 @@ function App() {
     ).then(() => {
       setRevealTx(revealTx.id);
     })
-  }, [revealPayment]);
+  }, []);
 
   // Track the current address in mempool.space
   useEffect(() => {
@@ -150,16 +150,16 @@ function App() {
 
   // Submit reveal tx if utxo for reveal address exists
   useEffect(() => {
-    if (debouncedTextInput === '' || revealAddress === undefined) return;
-    fetch(`https://${mempoolUrl}/api/address/${revealAddress}/utxo`).then(async (res) => {
+    if (debouncedTextInput === '' || revealPayment.address === undefined) return;
+    fetch(`https://${mempoolUrl}/api/address/${revealPayment.address}/utxo`).then(async (res) => {
       let utxos = await res.json();
       utxos.forEach(utxo => {
-        submitRevealTx(utxo.txid, utxo.vout, utxo.value);
+        submitRevealTx(revealPayment, utxo.txid, utxo.vout, utxo.value);
       });
     }).catch((error) => {
       console.log("Fetch address utxos error:", error);
     });
-  }, [debouncedTextInput, revealAddress, submitRevealTx]);
+  }, [debouncedTextInput, revealPayment, submitRevealTx]);
 
   // Create webhook to track reveal address and stop tracking any old reveal addresses
   useEffect(() => {
@@ -192,7 +192,7 @@ function App() {
       let commitTx = transactions[0];
       for (const [i, vout] of commitTx["vout"].entries()) {
         if (vout['scriptpubkey_address'] === revealPayment.address) {          
-          submitRevealTx(commitTx.txid, i, BigInt(vout['value']));
+          submitRevealTx(revealPayment, commitTx.txid, i, BigInt(vout['value']));
           break;
         }
       }
@@ -446,8 +446,7 @@ function App() {
                             {` (available after 1 confirmation)`}
                           </Text>
                           <Button size="sm" padding="4" marginTop="2" onClick={() => {
-                            setInputData('');
-                            setRevealTx(null);
+                            window.location.href = "/";
                           }}>
                             Reset
                           </Button>

@@ -1,5 +1,5 @@
 {
-  "name": "bitcoin-data-store",
+  "name": "btc-scribe",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
