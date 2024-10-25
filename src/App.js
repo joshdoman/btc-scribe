@@ -205,6 +205,7 @@ function App() {
   commitTx.finalize();
   const fee = Math.max(330, commitTx.vsize * feeRate);
   const feeUSD = conversions && (fee * conversions['USD'] / 100_000_000).toFixed(2);
+  const feeUSDText = feeUSD ? `($${feeUSD})` : '';
 
   const toast = useToast();
   const handleCopy = () => {
@@ -372,13 +373,9 @@ function App() {
                           value={`${fee} sats`}
                           isReadOnly
                         />
-                        {
-                          (feeUSD) && (
-                            <FormHelperText fontStyle="italic" fontSize="12">
-                            (${feeUSD})
-                          </FormHelperText>
-                          )
-                        }
+                        <FormHelperText fontStyle="italic" fontSize="12" minH="14px">
+                          {feeUSDText}
+                        </FormHelperText>
                       </FormControl>
                     </Box>
 
