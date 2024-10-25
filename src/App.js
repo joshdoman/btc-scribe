@@ -1,5 +1,5 @@
 /* global BigInt */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   ChakraProvider,
   Center,
@@ -106,22 +106,24 @@ function App() {
       feeRate = customFeeRate;
   }
 
-  const inscription = {
-    tags: { contentType: 'text/plain' },
-    body: utf8.decode(debouncedTextInput),
-  };
+  const revealPayment = useMemo(() => {
+    const inscription = {
+      tags: { contentType: 'text/plain' },
+      body: utf8.decode(debouncedTextInput),
+    };
 
-  const revealPayment = btc.p2tr(
-    undefined, // internalPubKey
-    ordinals.p2tr_ord_reveal(pubKey, [inscription]), // TaprootScriptTree
-    NETWORK, // mainnet or testnet
-    false, // allowUnknownOutputs, safety feature
-    customScripts // how to handle custom scripts
-  );
+    return btc.p2tr(
+      undefined, // internalPubKey
+      ordinals.p2tr_ord_reveal(pubKey, [inscription]), // TaprootScriptTree
+      NETWORK, // mainnet or testnet
+      false, // allowUnknownOutputs, safety feature
+      customScripts // how to handle custom scripts
+    )
+  }, [debouncedTextInput]);
   const revealAddress = revealPayment.address;
 
   // Submit reveal tx once we know commit txid and vout
-  const submitRevealTx = useCallback((revealPayment, txid, index, value) => {
+  const submitRevealTx = useCallback((txid, index, value) => {
     if (!value) return;
     const revealTx = new btc.Transaction({ allowUnknownOutputs: true, customScripts });
     revealTx.addInput({
@@ -139,7 +141,7 @@ function App() {
     ).then(() => {
       setRevealTx(revealTx.id);
     })
-  }, []);
+  }, [revealPayment]);
 
   // Track the current address in mempool.space
   useEffect(() => {
@@ -150,16 +152,16 @@ function App() {
 
   // Submit reveal tx if utxo for reveal address exists
   useEffect(() => {
-    if (debouncedTextInput === '' || revealPayment.address === undefined) return;
-    fetch(`https://${mempoolUrl}/api/address/${revealPayment.address}/txs`).then(async (res) => {
+    if (debouncedTextInput === '' || revealAddress === undefined) return;
+    fetch(`https://${mempoolUrl}/api/address/${revealAddress}/txs`).then(async (res) => {
       let txs = await res.json();
       // Look for spending transactions
       for (const tx of txs) {
         for (const vin of tx.vin) {
-          if (vin.prevout.scriptpubkey_address === revealPayment.address) {
+          if (vin.prevout.scriptpubkey_address === revealAddress) {
             if (!tx.status.confirmed && tx.fee < vin.prevout.value) {
               // Found reveal transaction but fee sub-optimal -> submit fee-optimized reveal tx
-              submitRevealTx(revealPayment, vin.txid, vin.vout, BigInt(vin.prevout.value));
+              submitRevealTx(vin.txid, vin.vout, BigInt(vin.prevout.value));
             } else {
               // Found reveal transaction
               setRevealTx(tx.txid);
@@ -171,16 +173,16 @@ function App() {
       // Look for a UTXO
       for (const tx of txs) {
         for (const [i, vout] of tx.vout.entries()) {
-          if (vout.scriptpubkey_address === revealPayment.address) {
+          if (vout.scriptpubkey_address === revealAddress) {
             // Found UTXO -> submit reveal tx
-            submitRevealTx(revealPayment, tx.txid, i, BigInt(vout.value));
+            submitRevealTx(tx.txid, i, BigInt(vout.value));
           }
         }
       }
     }).catch((error) => {
       console.log("Fetch address txs error:", error);
     });
-  }, [debouncedTextInput, revealPayment, submitRevealTx]);
+  }, [debouncedTextInput, revealAddress, submitRevealTx]); // 
 
   // Create webhook to track reveal address and stop tracking any old reveal addresses
   useEffect(() => {
@@ -200,7 +202,7 @@ function App() {
     if (lastJsonMessage.fees) {
       setFees(lastJsonMessage.fees);
     }
-    if (!revealPayment.address || revealTx !== null) return;
+    if (!revealAddress || revealTx !== null) return;
     var transactions = [];
     if (lastJsonMessage['address-transactions']) {
       transactions.push(...lastJsonMessage['address-transactions']);
@@ -212,13 +214,13 @@ function App() {
     if (transactions.length > 0) {
       let commitTx = transactions[0];
       for (const [i, vout] of commitTx["vout"].entries()) {
-        if (vout['scriptpubkey_address'] === revealPayment.address) {          
-          submitRevealTx(revealPayment, commitTx.txid, i, BigInt(vout['value']));
+        if (vout['scriptpubkey_address'] === revealAddress) {          
+          submitRevealTx(commitTx.txid, i, BigInt(vout['value']));
           break;
         }
       }
     }
-  }, [lastJsonMessage, revealPayment, revealTx, submitRevealTx]);
+  }, [lastJsonMessage, revealAddress, revealTx, submitRevealTx]);
 
   // Calculate recommended fee given fee rate
   const commitTx = new btc.Transaction({ allowUnknownOutputs: true, customScripts });
