@@ -54,7 +54,7 @@ const returnScript = btc.Script.encode(['RETURN', 0, 0, 0, 0]); // min-tx-size: 
 
 // URL params
 const urlParams = new URLSearchParams(window.location.search);
-const defaultMsg = urlParams.get('s') ?? '';
+const defaultMsg = urlParams.get('msg') ?? '';
 
 const isMobile = () => {
   return window.innerWidth < 768;
@@ -79,6 +79,10 @@ function App() {
     readyState
   } = useWebSocket(`wss://${mempoolUrl}/api/v1/ws`);
   const debouncedTextInput = useDebounce(inputData, 600);
+
+  if (inputData !== '' && inputData === debouncedTextInput) {
+    window.history.replaceState(null, "", `?msg=${debouncedTextInput}`);
+  }
 
   var feeRate = 1;
   switch (feeRateType) {
