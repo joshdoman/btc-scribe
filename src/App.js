@@ -83,10 +83,13 @@ function App() {
   } = useWebSocket(`wss://${mempoolUrl}/api/v1/ws`);
   const debouncedTextInput = useDebounce(inputData, 600);
 
-  if (inputData !== '' && inputData === debouncedTextInput) {
-    window.history.replaceState(null, "", `?refresh=true`);
-    localStorage.setItem('lastMsg', debouncedTextInput);
-  }
+  // Reload current message upon refresh
+  useEffect(() => {
+    if (debouncedTextInput.length > 0) {
+      window.history.replaceState(null, "", `?refresh=true`);
+      localStorage.setItem('lastMsg', debouncedTextInput);
+    }
+  }, [debouncedTextInput]);
 
   var feeRate = 1;
   switch (feeRateType) {
