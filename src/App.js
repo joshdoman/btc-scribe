@@ -4,7 +4,6 @@ import {
   ChakraProvider,
   Center,
   theme,
-  Button,
   Box,
   Wrap,
   Link,
@@ -83,8 +82,10 @@ function App() {
   } = useWebSocket(`wss://${mempoolUrl}/api/v1/ws`);
   const debouncedTextInput = useDebounce(inputData, 600);
 
-  // Reload current message upon refresh
   useEffect(() => {
+    // Set reveal tx to null
+    setRevealTx(null);
+    // Reload current message upon refresh
     if (debouncedTextInput.length > 0) {
       window.history.replaceState(null, "", `?refresh=true`);
       localStorage.setItem('lastMsg', debouncedTextInput);
@@ -460,19 +461,13 @@ function App() {
                             <Link href={`https://${mempoolUrl}/tx/${revealTx}`} isExternal color="blue">
                               View reveal transaction
                             </Link>
-                            {` (${revealTx})`}
                           </Text>
-                          <Text>
-                            <Link href={`https://${ordinalsUrl}/inscription/${revealTx}i0`} isExternal color="blue">
+                          <Text fontStyle="italic">
+                            <Link href={`https://${ordinalsUrl}/inscription/${revealTx}i0`} isExternal color="blue" fontStyle="normal">
                               View inscription
                             </Link>
                             {` (available after 1 confirmation)`}
                           </Text>
-                          <Button size="sm" padding="4" marginTop="2" onClick={() => {
-                            window.location.href = "/";
-                          }}>
-                            Reset
-                          </Button>
                         </Box>
                       )
                     }
