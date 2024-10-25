@@ -54,7 +54,10 @@ const returnScript = btc.Script.encode(['RETURN', 0, 0, 0, 0]); // min-tx-size: 
 
 // URL params
 const urlParams = new URLSearchParams(window.location.search);
-const defaultMsg = urlParams.get('msg') ?? '';
+const savedMsg = localStorage.getItem('lastMsg');
+const defaultMsg = urlParams.get('msg') ?? (
+  urlParams.get('refresh') && savedMsg ? savedMsg : ''
+);
 
 const isMobile = () => {
   return window.innerWidth < 768;
@@ -81,7 +84,8 @@ function App() {
   const debouncedTextInput = useDebounce(inputData, 600);
 
   if (inputData !== '' && inputData === debouncedTextInput) {
-    window.history.replaceState(null, "", `?msg=${debouncedTextInput}`);
+    window.history.replaceState(null, "", `?refresh=true`);
+    localStorage.setItem('lastMsg', debouncedTextInput);
   }
 
   var feeRate = 1;
