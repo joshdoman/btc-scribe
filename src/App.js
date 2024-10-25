@@ -151,13 +151,34 @@ function App() {
   // Submit reveal tx if utxo for reveal address exists
   useEffect(() => {
     if (debouncedTextInput === '' || revealPayment.address === undefined) return;
-    fetch(`https://${mempoolUrl}/api/address/${revealPayment.address}/utxo`).then(async (res) => {
-      let utxos = await res.json();
-      utxos.forEach(utxo => {
-        submitRevealTx(revealPayment, utxo.txid, utxo.vout, utxo.value);
-      });
+    fetch(`https://${mempoolUrl}/api/address/${revealPayment.address}/txs`).then(async (res) => {
+      let txs = await res.json();
+      // Look for spending transactions
+      for (const tx of txs) {
+        for (const vin of tx.vin) {
+          if (vin.prevout.scriptpubkey_address === revealPayment.address) {
+            if (!tx.status.confirmed && tx.fee < vin.prevout.value) {
+              // Found reveal transaction but fee sub-optimal -> submit fee-optimized reveal tx
+              submitRevealTx(revealPayment, vin.txid, vin.vout, BigInt(vin.prevout.value));
+            } else {
+              // Found reveal transaction
+              setRevealTx(tx.txid);
+            }
+            return;
+          }
+        }
+      }
+      // Look for a UTXO
+      for (const tx of txs) {
+        for (const [i, vout] of tx.vout.entries()) {
+          if (vout.scriptpubkey_address === revealPayment.address) {
+            // Found UTXO -> submit reveal tx
+            submitRevealTx(revealPayment, tx.txid, i, BigInt(vout.value));
+          }
+        }
+      }
     }).catch((error) => {
-      console.log("Fetch address utxos error:", error);
+      console.log("Fetch address txs error:", error);
     });
   }, [debouncedTextInput, revealPayment, submitRevealTx]);
 
@@ -432,7 +453,7 @@ function App() {
                         </Box>
                       ) : (
                         <Box>
-                          <Text fontWeight="bold" color="green">Payment received!</Text>
+                          <Text fontWeight="bold" color="green">Success!</Text>
                           <Text>
                             <Link href={`https://${mempoolUrl}/tx/${revealTx}`} isExternal color="blue">
                               View reveal transaction
