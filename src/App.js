@@ -140,7 +140,10 @@ function App() {
     fetch(
       `https://${mempoolUrl}/api/tx`, { method: 'POST', body: revealTx.hex }
     ).then(() => {
-      setRevealTx(revealTx.id);
+      setRevealTx({
+        txid: revealTx.id,
+        confirmed: false,
+      });
     })
   }, [revealPayment]);
 
@@ -165,7 +168,10 @@ function App() {
               submitRevealTx(vin.txid, vin.vout, BigInt(vin.prevout.value));
             } else {
               // Found reveal transaction
-              setRevealTx(tx.txid);
+              setRevealTx({
+                txid: tx.txid,
+                confirmed: tx.status.confirmed,
+              });
             }
             return;
           }
@@ -458,15 +464,15 @@ function App() {
                         <Box>
                           <Text fontWeight="bold" color="green">Success!</Text>
                           <Text>
-                            <Link href={`https://${mempoolUrl}/tx/${revealTx}`} isExternal color="blue">
+                            <Link href={`https://${mempoolUrl}/tx/${revealTx.txid}`} isExternal color="blue">
                               View reveal transaction
                             </Link>
                           </Text>
                           <Text fontStyle="italic">
-                            <Link href={`https://${ordinalsUrl}/inscription/${revealTx}i0`} isExternal color="blue" fontStyle="normal">
+                            <Link href={`https://${ordinalsUrl}/inscription/${revealTx.txid}i0`} isExternal color="blue" fontStyle="normal">
                               View inscription
                             </Link>
-                            {` (available after 1 confirmation)`}
+                            {!revealTx.confirmed ? ` (available after 1 confirmation)`: ''}
                           </Text>
                         </Box>
                       )
