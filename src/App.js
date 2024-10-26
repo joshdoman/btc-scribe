@@ -462,7 +462,9 @@ function App() {
                         </Box>
                       ) : (
                         <Box>
-                          <Text fontWeight="bold" color="green">Success!</Text>
+                          <Text fontWeight="bold" color="green">
+                            {revealTx.confirmed ? "Inscribed!" : "Payment Received!"}
+                          </Text>
                           <Text>
                             <Link href={`https://${mempoolUrl}/tx/${revealTx.txid}`} isExternal color="blue">
                               View reveal transaction
