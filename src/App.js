@@ -58,14 +58,10 @@ const defaultMsg = urlParams.get('msg') ?? (
   urlParams.get('refresh') && savedMsg ? savedMsg : ''
 );
 
-const isMobile = () => {
-  return window.innerWidth < 768;
-};
-
 function App() {
   const [feeRateType, setFeeRateType] = useState('2');
   const [customFeeRate, setCustomFeeRate] = useState(1);
-  const [showFeeRates, setShowFeeRates] = useState(!isMobile());
+  const [showFeeRates, setShowFeeRates] = useState(false);
   const [conversions, setConversions] = useState(undefined);
   const [inputData, setInputData] = useState(defaultMsg);
   const [revealTx, setRevealTx] = useState(null);
@@ -317,7 +313,6 @@ function App() {
                           src="./settings.svg"
                           marginRight={2}
                           cursor="pointer"
-                          hidden={!isMobile()}
                           onClick={() => {
                             setShowFeeRates(!showFeeRates);
                           }} />
@@ -403,7 +398,7 @@ function App() {
                     </Box>
                     
                     <Box>
-                      <Text mb={2}>Fee</Text>
+                      <Text mb={2}>Pay:</Text>
                       
                       <FormControl>
                         <Input
@@ -417,7 +412,7 @@ function App() {
                     </Box>
 
                     <Box>
-                      <Text mb={2}>Pay To</Text>
+                      <Text mb={2}>To:</Text>
                       <InputGroup>
                         <Input
                           value={revealPayment.address}
