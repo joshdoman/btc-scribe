@@ -40,7 +40,7 @@ import { Logo } from './Logo';
 import Footer from './Footer';
 
 // Network type
-const isMainnet = true;
+const isMainnet = process.env.REACT_APP_IS_MAINNET !== 'false';
 const NETWORK = isMainnet ? btc.NETWORK : btc.TEST_NETWORK;
 const mempoolUrl = isMainnet ? 'mempool.space' : 'mempool.space/testnet';
 const ordinalsUrl = isMainnet ? 'ordinals.com' : 'testnet.ordinals.com';
