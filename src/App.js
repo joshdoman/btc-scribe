@@ -284,7 +284,16 @@ function App() {
                   onClick={() => {
                     window.location.href = "/";
                   }} />
-                <Text marginLeft="2" marginTop="2" fontSize="2xl" textAlign="left">Welcome to BTC Scribe!</Text>
+                <Text marginLeft="2" marginTop="2" fontSize="2xl" textAlign="left">
+                  Welcome to BTC Scribe!
+                  {
+                    !isMainnet && (
+                      <Text as="sup" fontSize="xs" color="blue.500" ml="2">
+                        testnet4
+                      </Text>
+                    )
+                  }
+                </Text>
               </Flex>
             </Heading>
             <Text marginTop={4}>
