@@ -42,8 +42,8 @@ import Footer from './Footer';
 // Network type
 const isMainnet = process.env.REACT_APP_IS_MAINNET !== 'false';
 const NETWORK = isMainnet ? btc.NETWORK : btc.TEST_NETWORK;
-const mempoolUrl = isMainnet ? 'mempool.space' : 'mempool.space/testnet';
-const ordinalsUrl = isMainnet ? 'ordinals.com' : 'testnet.ordinals.com';
+const mempoolUrl = isMainnet ? 'mempool.space' : 'mempool.space/testnet4';
+const ordinalsUrl = isMainnet ? 'ordinals.com' : undefined;
 
 // Transaction params
 const privKey = hex.decode('0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a'); // dummy
@@ -465,12 +465,16 @@ function App() {
                               View reveal transaction
                             </Link>
                           </Text>
-                          <Text fontStyle="italic">
-                            <Link href={`https://${ordinalsUrl}/inscription/${revealTx.txid}i0`} isExternal color="blue" fontStyle="normal">
-                              View inscription
-                            </Link>
-                            {!revealTx.confirmed ? ` (available after 1 confirmation)`: ''}
-                          </Text>
+                          {
+                            ordinalsUrl && (
+                              <Text fontStyle="italic">
+                                <Link href={`https://${ordinalsUrl}/inscription/${revealTx.txid}i0`} isExternal color="blue" fontStyle="normal">
+                                  View inscription
+                                </Link>
+                                {!revealTx.confirmed ? ` (available after 1 confirmation)`: ''}
+                              </Text>
+                            )
+                          }
                         </Box>
                       )
                     }
